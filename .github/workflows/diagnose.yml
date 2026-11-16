@@ -74,7 +74,7 @@ jobs:
             pos=s.find(term)
             print("ROUTE_SNIPPET",term,"offset",pos,s[max(0,pos-140):pos+520].replace("\n"," ") if pos>=0 else "MISSING")
           PY
-          for hash in map vehicle-interior kit kit-scanner kit-paired kit-software reports gallery; do
+          for hash in kit-paired kit-paired kit-paired; do
             url="https://htmlpreview.github.io/?https://raw.githubusercontent.com/nmustafastudent-netizen/Nashmi.Demo.RF/main/index.html#$hash"
             echo "== DEEP-LINK $hash =="
             timeout 38s google-chrome --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=7000 --dump-dom "$url" > /tmp/deep-dom.html 2>/dev/null || true
