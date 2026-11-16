@@ -1,0 +1,43 @@
+name: Diagnose Nashmi RF Portal and DNS
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check HTML and linked portal features
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re, pathlib
+          html=pathlib.Path("index.html").read_text(encoding="utf-8")
+          print("HTML_BYTES",len(html))
+          print("HTML_TITLE",re.findall(r"<title[^>]*>(.*?)</title>",html,re.I|re.S)[:1])
+          print("SCRIPT_COUNT",len(re.findall(r"<script\\b",html,re.I)))
+          print("EVENT_COUNT",len(re.findall(r"addEventListener\\s*\\(",html)))
+          print("IFRAME_COUNT",len(re.findall(r"<iframe",html,re.I)))
+          print("INTERACTIVE_SECTION_IDS", re.findall(r'id="([^"]+)"',html)[:100])
+          print("ANCHOR_HREFS",re.findall(r'href="([^"]+)"',html)[:55])
+          print("HASH_REFS",re.findall(r"location\\.hash|hashchange|URLSearchParams",html)[:20])
+          print("HTML_SNIPPET",html[:1400].replace("\n"," "))
+          print("HTML_END",html[-500:].replace("\n"," "))
+          PY
+      - name: Diagnose public DNS and website hosting
+        shell: bash
+        run: |
+          for host in nashmigroup.com rf.nashmigroup.com nmustafastudent-netizen.github.io; do
+            echo "== DNS $host =="
+            dig +short NS "$host"
+            dig +short CNAME "$host"
+            dig +short A "$host"
+          done
+          for url in https://rf.nashmigroup.com/ https://nashmigroup.com/ https://nmustafastudent-netizen.github.io/Nashmi.Demo.RF/ https://raw.githack.com/nmustafastudent-netizen/Nashmi.Demo.RF/main/index.html; do
+            echo "== HTTP $url =="
+            curl --max-time 15 -L -s -o /dev/null -w 'HTTP %{http_code} final=%{url_effective} type=%{content_type} size=%{size_download} error=%{errormsg}\n' "$url" || true
+          done
