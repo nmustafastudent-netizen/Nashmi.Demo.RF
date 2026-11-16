@@ -41,3 +41,13 @@ jobs:
             echo "== HTTP $url =="
             curl --max-time 15 -L -s -o /dev/null -w 'HTTP %{http_code} final=%{url_effective} type=%{content_type} size=%{size_download} error=%{errormsg}\n' "$url" || true
           done
+      - name: Check direct HTML fallback hosts and browser
+        shell: bash
+        run: |
+          for url in "https://cdn.jsdelivr.net/gh/nmustafastudent-netizen/Nashmi.Demo.RF@main/index.html" "https://raw.githack.com/nmustafastudent-netizen/Nashmi.Demo.RF/main/index.html" "https://htmlpreview.github.io/?https://raw.githubusercontent.com/nmustafastudent-netizen/Nashmi.Demo.RF/main/index.html"; do
+            echo "== ALTERNATE $url =="
+            curl -sL --max-time 22 -H 'Sec-Fetch-Dest: document' -o /tmp/alt-web-response -w 'HTTP %{http_code} TYPE %{content_type} SIZE %{size_download} EFFECTIVE %{url_effective}\n' "$url" || true
+            head -c 220 /tmp/alt-web-response | tr '\n' ' '; echo
+          done
+          echo "== CHROME =="; command -v google-chrome || true
+          command -v chromium || true
