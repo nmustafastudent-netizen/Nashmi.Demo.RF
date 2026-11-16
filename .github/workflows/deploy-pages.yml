@@ -19,10 +19,10 @@ jobs:
     steps:
       - name: Checkout portal
         uses: actions/checkout@v4
+      - name: Verify the interactive viewer exists
+        run: test -s index.html
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - name: Upload static portal
         uses: actions/upload-pages-artifact@v4
         with:
