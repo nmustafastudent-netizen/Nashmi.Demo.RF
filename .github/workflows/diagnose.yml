@@ -51,3 +51,16 @@ jobs:
           done
           echo "== CHROME =="; command -v google-chrome || true
           command -v chromium || true
+      - name: Open actual viewer and public fallback in headless Chrome
+        shell: bash
+        run: |
+          for url in "file://$PWD/index.html#map" "https://htmlpreview.github.io/?https://raw.githubusercontent.com/nmustafastudent-netizen/Nashmi.Demo.RF/main/index.html" "https://raw.githack.com/nmustafastudent-netizen/Nashmi.Demo.RF/main/index.html"; do
+            echo "== BROWSER $url =="
+            timeout 40s google-chrome --headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer --virtual-time-budget=8500 --dump-dom "$url" > /tmp/chrome-output.html 2>/dev/null || true
+            python3 - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/chrome-output.html').read_text(errors='replace')
+          print("DOM_CHARS",len(s),"NASHMI_VIEWER", "Nashmi | Private RF Engineering Explorer" in s,"HAS_MAP", 'id="siteMap"' in s,"CONTENT_WARNING","External Content Notice" in s,"HAS_IMAGE", 'data:image/' in s)
+          print("FIRST_TITLE",s.split('<title>')[1].split('</title>')[0] if '<title>' in s else "NO_TITLE")
+          PY
+          done
